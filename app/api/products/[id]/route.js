@@ -23,8 +23,26 @@ export async function GET(request, context) {
   }
 }
 
-export function DELETE() {
-  return NextResponse.json("eliminando producto");
+export async function DELETE(request, context) {
+  try {
+    const params = await context.params;
+    const result = await conn.query("DELETE FROM product WHERE id = ?", [
+      params.id,
+    ]);
+    if (result.affectedRows === 0) {
+      return NextResponse.json("producto no encontrado", { status: 404 });
+    }
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: error.message,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
 
 export function PUT() {
