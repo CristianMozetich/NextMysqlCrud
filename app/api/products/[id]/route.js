@@ -45,6 +45,31 @@ export async function DELETE(request, context) {
   }
 }
 
-export function PUT() {
-  return NextResponse.json("actualizando producto");
+export async function PUT(request, context) {
+  try {
+    const params = await context.params;
+    const data = await request.json();
+    const result = await conn.query("UPDATE product SET ? WHERE id = ?", [
+      data,
+      params.id,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return NextResponse.json("producto no encontrado", { status: 404 });
+    }
+    const updatedProduct = await conn.query(
+      "SELECT * FROM product WHERE id = ?",
+      [params.id]
+    );
+    return NextResponse.json(updatedProduct[0]);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: error.message,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
