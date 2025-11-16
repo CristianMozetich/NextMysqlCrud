@@ -10,7 +10,10 @@ const Buttons = ({ productId }: ButtonsProps) => {
   return (
     <div>
       <div className="gap-2 flex justify-end mt-2">
-        <button className="bg-blue-500 hover:bg-blue-700 py-2 px-3 rounded hover:cursor-pointer text-white">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 py-2 px-3 rounded hover:cursor-pointer text-white"
+          onClick={() => router.push(`/products/edit/${productId}`)}
+        >
           Editar
         </button>
         <button

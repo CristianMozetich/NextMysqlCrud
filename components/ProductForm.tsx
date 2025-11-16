@@ -1,6 +1,7 @@
 "use client";
-import { useState, ChangeEvent, useRef } from "react";
+import { useState, ChangeEvent, useRef, useEffect } from "react";
 import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
 
 const ProductForm = () => {
   const [product, setProduct] = useState({
@@ -9,6 +10,8 @@ const ProductForm = () => {
     description: "",
   });
   const form = useRef<HTMLFormElement>(null);
+  const params = useParams();
+  const router = useRouter();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setProduct({
@@ -18,11 +21,31 @@ const ProductForm = () => {
     console.log(e.target.value, e.target.name);
   };
 
+  useEffect(()=>{
+    if(params.id){
+       axios.get(`/api/products/${params.id}`)
+      .then(res => setProduct({
+        name: res.data.name,
+        price: res.data.price,
+        description: res.data.description
+      }))
+    }
+  },[])
+
   const handleSubmit = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const res = await axios.post("/api/products", product);
+    if(!params.id){
+      const res = await axios.post("/api/products", product);
     console.log(res);
     form.current?.reset();
+    } else {
+      const res = await axios.put(`/api/products/${params.id}`, product);
+      console.log(res);
+       
+    }
+    form.current?.reset();
+    router.refresh();
+    router.push("/products");
   };
   return (
     <div>
@@ -41,6 +64,7 @@ const ProductForm = () => {
         <input
           type="text"
           name="name"
+          value={product.name}
           placeholder="Name"
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900"
@@ -54,6 +78,7 @@ const ProductForm = () => {
         <input
           type="number"
           name="price"
+          value={product.price}
           placeholder="00.00"
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900"
@@ -64,6 +89,7 @@ const ProductForm = () => {
         <textarea
           type="text"
           name="description"
+          value={product.description}
           placeholder="Description"
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900"
