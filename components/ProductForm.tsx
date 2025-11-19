@@ -9,6 +9,7 @@ const ProductForm = () => {
     price: 0,
     description: "",
   });
+  const [file, setFile] = useState(null);
   const form = useRef<HTMLFormElement>(null);
   const params = useParams();
   const router = useRouter();
@@ -21,34 +22,45 @@ const ProductForm = () => {
     console.log(e.target.value, e.target.name);
   };
 
-  useEffect(()=>{
-    if(params.id){
-       axios.get(`/api/products/${params.id}`)
-      .then(res => setProduct({
-        name: res.data.name,
-        price: res.data.price,
-        description: res.data.description
-      }))
+  useEffect(() => {
+    if (params.id) {
+      axios.get(`/api/products/${params.id}`).then((res) =>
+        setProduct({
+          name: res.data.name,
+          price: res.data.price,
+          description: res.data.description,
+        })
+      );
     }
-  },[])
+  }, []);
 
   const handleSubmit = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if(!params.id){
-      const res = await axios.post("/api/products", product);
-    console.log(res);
-    form.current?.reset();
+    if (!params.id) {
+      const formData = new FormData();
+      formData.append("name", product.name);
+      formData.append("price", product.price.toString());
+      formData.append("description", product.description);
+      if (file) {
+        formData.append("image", file);
+      }
+      const res = await axios.post("/api/products", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(res);
+      form.current?.reset();
     } else {
       const res = await axios.put(`/api/products/${params.id}`, product);
       console.log(res);
-       
     }
     form.current?.reset();
     router.refresh();
     router.push("/products");
   };
   return (
-    <div>
+    <div className="flex justify-center">
       <form
         action=""
         className="bg-gray-50 rounded-md shadow px-8 pt-6 pb-8 mb-4"
@@ -94,8 +106,31 @@ const ProductForm = () => {
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900"
         />
+        <div className="flex flex-col">
+          <label
+            htmlFor="productImage"
+            className="text-gray-700 text-sm font-bold mb-2"
+          >
+            Product Image
+          </label>
+          <input
+            type="file"
+            className="block shadow border rounded py-2 p-3 mb-3 text-gray-800 hover:cursor-pointer bg-blue-100"
+            onChange={(e) => {
+              setFile(e.target.files[0]);
+            }}
+          />
+          {file && (
+            <img
+              className="w-96 object-contain my-4 mx-auto"
+              src={URL.createObjectURL(file)}
+              alt=""
+            />
+          )}
+        </div>
+
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Save Product
+          {params.id ? "Update Product" : "Create Product"}
         </button>
       </form>
     </div>

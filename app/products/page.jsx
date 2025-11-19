@@ -8,7 +8,7 @@ async function loadProducts() {
 async function ProductsPage() {
   const products = await loadProducts();
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-wrap gap-4">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
